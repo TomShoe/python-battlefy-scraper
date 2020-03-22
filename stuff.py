@@ -62,14 +62,18 @@ def matchFillSingle(con, response):
 				continue
 	
 	def getTime(x):
+		b = 0
 		for b in range(x):
 			try:
 				timex.append(datetime.strptime(response[b]['schedule']['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ'))
-				timex[b] = (timex[b] - timedelta(hours=3))
 			except KeyError:
 				timex.append(datetime.strptime(response[b]['createdAt'], '%Y-%m-%dT%H:%M:%S.%fZ'))
-				timex[b] = (timex[b] - timedelta(hours=3))
-			
+			except ValueError:
+				timex.append(datetime.strptime(response[b]['schedule']['startTime'], '%Y-%m-%dT%H:%M:%SZ'))
+				
+		for y in range(len(timex)):
+			timex[y] = (timex[y] - timedelta(hours=8))
+						
 		for a in range(x):
 			date.append(timex[a].strftime("%Y-%m-%d"))
 			hour.append(timex[a].strftime("%H"))
@@ -89,16 +93,17 @@ def matchFill(con, response, inner, count):
 		j = 0
 		k = 0
 		for i in range(x):
-			for j in range(inner[j]):
+			m = inner[i]
+			for j in range(m):
 				try:
 					team1.append(response[i]['matches'][j]['top']['team']['name'])
-					
 				except KeyError:
 					team1.append('')	
 					continue
 
 		for i in range(x):
-			for k in range(inner[k]):
+			m = inner[i]
+			for k in range(m):
 				try:
 					team2.append(response[i]['matches'][k]['bottom']['team']['name'])
 				except KeyError:
@@ -110,7 +115,8 @@ def matchFill(con, response, inner, count):
 		n = 0
 		p = 0
 		for m in range(x):	
-			for n in range(inner[n]):
+			k = inner[m]
+			for n in range(k):
 				try:
 					score1.append(response[m]['matches'][n]['top']['score'])
 				except KeyError:
@@ -118,7 +124,8 @@ def matchFill(con, response, inner, count):
 					continue
 
 		for m in range(x):	
-			for p in range(inner[p]):
+			k = inner[m]
+			for p in range(k):
 				try:
 					score2.append(response[m]['matches'][p]['bottom']['score'])
 				except KeyError:
@@ -126,16 +133,19 @@ def matchFill(con, response, inner, count):
 					continue
 	
 	def getTime(x, inner):
-		g = 0
 		for b in range(x):
-			for g in range(inner[g]):
+			k = inner[b]
+			for g in range(k):
 				try:
 					timex.append(datetime.strptime(response[b]['matches'][g]['schedule']['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ'))
-					timex[b] = (timex[b] - timedelta(hours=3))
 				except KeyError:
-					timex.append(datetime.strptime(response[b]['createdAt'], '%Y-%m-%dT%H:%M:%S.%fZ'))
-					timex[b] = (timex[b] - timedelta(hours=3))
+					timex.append(datetime.strptime(response[b]['matches'][g]['createdAt'], '%Y-%m-%dT%H:%M:%S.%fZ'))
 					continue
+				except ValueError:
+					timex.append(datetime.strptime(response[b]['matches'][g]['schedule']['startTime'], '%Y-%m-%dT%H:%M:%SZ'))
+		
+		for y in range(len(timex)):
+			timex[y] = (timex[y] - timedelta(hours=8))
 			
 		for a in range(len(timex)):
 			date.append(timex[a].strftime("%Y-%m-%d"))
@@ -166,7 +176,7 @@ def rename():
 
 def printer():
 	for y in range(len(team1)):
-		print("{{MatchSchedule" + "|team1=" + str(team1[y]) + "|team2=" + str(team2[y]) + "|team1score=" + str(score1[y]) + "|team2score=" + str(score2[y]) + "|winner=" + str(winner[y]) + "|date=" + str(date[y]) + "|time=" + str(hour[y]) + ":" + str(minute[y]) + "|timezone=PST|dst=no|vod1=|stream=}} \n")
+		print("{{MatchSchedule" + "|team1=" + str(team1[y]) + "|team2=" + str(team2[y]) + "|team1score=" + str(score1[y]) + "|team2score=" + str(score2[y]) + "|winner=" + str(winner[y]) + "|date=" + str(date[y]) + "|time=" + str(hour[y]) + ":" + str(minute[y]) + "|timezone=PST|dst=no|vod1=|stream=}}")
 	
 if __name__ == "__main__":
 	jloader()
